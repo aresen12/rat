@@ -33,27 +33,33 @@ async def on_message(message):
     if message.content.startswith('*искать в интернете '):
         song = message.content[20:56]
         print(song)
-        url =f"https://amdm.ru/search/?q={song}"
+        url =f"https://pesni.guru/search/{song}"
 
-        sel = "#body > div.content-table > article"
+        sel = "body > div > div.arow > div.acol1 > div > p:nth-child(3) > a"
         import requests
         respons = requests.get(url)
         text = respons.text
         soup = BeautifulSoup(text,"html.parser")
         a = soup.select_one(sel)
-        if not a or not soup.select_one("table > tr:nth-child(2) a:nth-child(2)"):
+        textsong = a.attrs["href"]
+
+        if not textsong :
             await message.channel.send("Текст не найден")
 
         else:
-           sel1 = "#body > div.content-table > article > div.b-podbor > div:nth-child(2)"
+           sel1 = "body > div.container > div.arow > div.acol1 > div"
 
-           attrs = soup.select_one("table > tr:nth-child(2) a:nth-child(2)").attrs['href']
+           attrs = "https://pesni.guru/"+textsong
            respons = requests.get(attrs)
            text = respons.text
-           print("attrs",attrs)
+
            soup = BeautifulSoup(text,"html.parser")
            a = soup.select_one(sel1)
-           embed = discord.Embed(color=0xf00c89,  type='rich', description=a.text)
+           a.select_one("a").clear()
+           a.select_one(".bar_block").clear()
+           a.select_one("p").clear()
+           a.select_one("ul").clear()
+           embed = discord.Embed(color=0xf00c89,  type='rich', description=a.get_text(separator="\n"))
            await message.channel.send(embed=embed)
         #await message.channel.send(a.text)
 
@@ -68,15 +74,16 @@ async def on_message(message):
            #print(h)
            #youtube = h.attrs['src']
            #print("youtube"+youtube)
-           url2 =f"https://www.youtube.com/results?search_query={song}"
+           #url2 =f"https://www.youtube.com/results?search_query={song}"
 
-           sel3 = "#video-title > yt-formatted-string"
-           respons = requests.get(url2)
+           sel3 = "#movie_player > div.ytp-chrome-top.ytp-show-cards-title > div.ytp-title > div"
+           a = soup.select_one(sel3)
            text = respons.text
            soup = BeautifulSoup(text,"html.parser")
-           a = soup.select_one(sel3)
-           attrs = soup.select_one("table > tr:nth-child(2) a:nth-child(2)").attrs['href']
-           youtube = requests.get("https:"+attrs)
+
+           print(a)
+          # attrs = soup.select_one("table > tr:nth-child(2) a:nth-child(2)").attrs['href']
+          # youtube = requests.get("https:"+attrs)
 
 
 client.run(TOKEN)
